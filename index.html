@@ -4,339 +4,238 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Elandhai Premier League - Live Score</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Elandhai Premier League</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#07130c;color:#effff3;font:16px system-ui,Arial}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px max(14px,calc((100vw - 900px)/2));background:#091d12;border-bottom:1px solid #2c5038}
-.brand{font-weight:900}.brand span,.eyebrow{color:#65e5a0}
-.btn{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:800;cursor:pointer}
-.green{background:#16a765;color:white}
-.soft{background:#203b2b;color:#eafff0;border:1px solid #3c6048}
-.red{background:#59232a;color:#ffe4e6}
-main{max-width:900px;margin:auto;padding:22px 14px}
-.eyebrow{font-size:12px;letter-spacing:2px;font-weight:900}
-h1{font-size:clamp(28px,5vw,42px);margin:8px 0}
-h2{margin:0 0 14px}
-.muted{color:#a9beaf;font-size:14px}
-.card{background:linear-gradient(145deg,#13271b,#0d1c13);border:1px solid #284735;border-radius:18px;padding:20px;margin-top:18px}
-.score{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;margin:25px 0}
-.team{font-weight:800;overflow-wrap:anywhere}
-.big{font-size:clamp(38px,8vw,62px);font-weight:950;letter-spacing:-2px;font-variant-numeric:tabular-nums}
-.vs{color:#83a18e;font-weight:900}
-.overs{font-size:14px;color:#c2d9c9}
-.status{border-top:1px solid #ffffff26;padding-top:14px;color:#b7f5ce;font-weight:700}
-.hidden{display:none!important}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.grid .btn{padding:14px 5px;font-size:18px}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.row>*{flex:1}
-.field{display:grid;gap:6px;margin:10px 0}
-.field label{font-size:13px;color:#a9beaf}
-.field input{padding:12px;border-radius:9px;border:1px solid #42604b;background:#07150c;color:white;width:100%;font:inherit}
-.notice{padding:12px;border-radius:10px;background:#142b1c;color:#c7f6d5;font-size:13px;margin-top:12px}
-#message{min-height:22px;margin-top:10px;font-size:14px}
-.error{color:#ffb8be}.small{font-size:12px;color:#a9beaf}
-@media(max-width:520px){.card{padding:15px}.score{gap:4px}.team{font-size:13px}.grid .btn{font-size:16px}}
+body{margin:0;font-family:Arial,sans-serif;background:#07130d;color:#fff}
+header{background:#0c8b50;padding:18px;text-align:center}
+nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+button{border:0;border-radius:8px;padding:12px;cursor:pointer;font-weight:bold}
+nav button,.action{background:#183b29;color:white}
+main{max-width:900px;margin:auto;padding:16px}
+.card{background:#12251a;border:1px solid #285238;border-radius:14px;padding:18px;margin:15px 0}
+.score{text-align:center;font-size:42px;font-weight:bold;margin:20px}
+.teams{display:flex;justify-content:space-around;text-align:center;gap:10px}
+.teams h3{font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grid button{background:#23432f;color:white;font-size:18px}
+.grid .four{background:#14783d}.grid .six{background:#09a65c}
+.grid .out{background:#9b2730}
+input,select{padding:11px;width:100%;margin:5px 0 12px;border-radius:7px;border:1px solid #53735e;background:#07130d;color:white}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:10px;border-bottom:1px solid #31503b;text-align:center}
+td:first-child,th:first-child{text-align:left}
+.page{display:none}.page.active{display:block}
+.green{background:#0c8b50;color:white}
+small{color:#b8d2bf}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand">🏏 ELANDHAI <span>PREMIER LEAGUE</span></div>
-  <button id="loginOpen" class="btn soft">Operator Login</button>
+<h2>🏏 ELANDHAI PREMIER LEAGUE</h2>
+<p>BOUNDARY LIVE · Live Cricket Scorecard</p>
+<nav>
+<button onclick="show('live')">Live Score</button>
+<button onclick="show('teams')">Teams</button>
+<button onclick="show('points')">Points Table</button>
+<button onclick="show('about')">About</button>
+</nav>
 </header>
 
 <main>
-  <div class="eyebrow">LIVE CRICKET SCOREBOARD</div>
-  <h1 id="matchTitle">Elandhai Premier League</h1>
-  <p class="muted">Viewers can watch the score. Only the authorised operator can update it.</p>
+<section id="live" class="page active">
+<div class="card">
+<center><small id="status">● LIVE MATCH</small></center>
+<div class="teams">
+<div><h3 id="teamAView">Elandhai Paltans</h3><small>Batting</small></div>
+<div><h3>VS</h3></div>
+<div><h3 id="teamBView">Elandhai Super Kings</h3><small>Bowling</small></div>
+</div>
+<div class="score"><span id="runs">0</span>/<span id="wickets">0</span></div>
+<center><p>Overs: <span id="overs">0.0</span></p>
+<p id="result">Match in progress</p></center>
+</div>
 
-  <section class="card" aria-live="polite">
-    <div class="eyebrow">● LIVE SCORE</div>
-    <div class="score">
-      <div>
-        <div class="team" id="teamA">Elandhai Paltans</div>
-        <div class="big"><span id="runs">0</span>/<span id="wickets">0</span></div>
-        <div class="overs"><span id="overs">0.0</span> overs</div>
-      </div>
-      <div class="vs">VS</div>
-      <div>
-        <div class="team" id="teamB">Elandhai Super Kings</div>
-        <div class="big" style="font-size:28px">LIVE</div>
-        <div class="overs">Current match</div>
-      </div>
-    </div>
-    <div class="status" id="summary">Loading live score...</div>
-    <div id="message" role="status"></div>
-    <p class="small">This scoreboard reads the shared database.</p>
-  </section>
+<div class="card">
+<h3>⚡ Ball-by-ball scoring</h3>
+<div class="grid">
+<button onclick="score(0)">0</button>
+<button onclick="score(1)">1</button>
+<button onclick="score(2)">2</button>
+<button onclick="score(3)">3</button>
+<button class="four" onclick="score(4)">4</button>
+<button class="six" onclick="score(6)">6</button>
+<button class="out" onclick="wicket()">Wicket</button>
+<button onclick="undo()">↶ Undo</button>
+</div>
+<p>
+<button class="action" onclick="extra()">Wide (+1)</button>
+<button class="action" onclick="extra()">No-ball (+1)</button>
+<button class="action" onclick="endMatch()">End innings</button>
+<button class="action" onclick="newMatch()">New match</button>
+</p>
+</div>
 
-  <section id="loginPanel" class="card hidden">
-    <h2>Operator Login</h2>
-    <form id="loginForm">
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" autocomplete="username" required>
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" type="password" autocomplete="current-password" required>
-      </div>
-      <div class="row">
-        <button class="btn green" type="submit">Sign In</button>
-        <button class="btn soft" type="button" id="cancelLogin">Cancel</button>
-      </div>
-    </form>
-  </section>
+<div class="card">
+<h3>Batting scorecard</h3>
+<table><thead><tr><th>Ball</th><th>Runs</th><th>Wickets</th><th>Overs</th></tr></thead>
+<tbody id="history"></tbody></table>
+<p><button class="green" onclick="downloadPDF()">Download / Print Scorecard</button></p>
+<button class="action" onclick="shareScore()">Share Score</button>
+</div>
 
-  <section id="operatorPanel" class="card hidden">
-    <h2>Operator Dashboard</h2>
-    <p class="muted">Use these controls to update the shared score.</p>
-    <div class="grid">
-      <button class="btn soft" data-runs="0">0</button>
-      <button class="btn soft" data-runs="1">+1</button>
-      <button class="btn soft" data-runs="2">+2</button>
-      <button class="btn soft" data-runs="3">+3</button>
-      <button class="btn soft" data-runs="4">4</button>
-      <button class="btn green" data-runs="6">6</button>
-      <button class="btn red" id="addWicket">Wicket</button>
-      <button class="btn soft" id="undoBall">Undo</button>
-    </div>
-    <div class="row">
-      <button class="btn soft" id="wide">Wide (+1)</button>
-      <button class="btn soft" id="noBall">No-ball (+1)</button>
-      <button class="btn red" id="resetScore">Reset Score</button>
-    </div>
-    <div class="notice">
-      Secure access depends on your Supabase Row Level Security (RLS) policies.
-      Never put a secret/service-role key in this file.
-    </div>
-    <div class="row">
-      <button class="btn red" id="logout">Sign Out</button>
-    </div>
-  </section>
+<div class="card">
+<h3>Match setup</h3>
+<label>Batting team</label><input id="teamA" value="Elandhai Paltans">
+<label>Bowling team</label><input id="teamB" value="Elandhai Super Kings">
+<label>Overs per innings</label><input id="limit" type="number" min="1" max="50" value="8">
+<button class="green" onclick="setup()">Save setup</button>
+</div>
+</section>
 
-  <p class="small" style="text-align:center;margin-top:20px">Elandhai Premier League · Live Score</p>
+<section id="teams" class="page">
+<div class="card">
+<h2>👥 Team & Player Management</h2>
+<select id="whichTeam"><option value="A">Elandhai Paltans</option><option value="B">Elandhai Super Kings</option></select>
+<input id="player" placeholder="Enter player name">
+<select id="role"><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>Wicketkeeper</option></select>
+<button class="green" onclick="addPlayer()">Add Player</button>
+<div id="squads"></div>
+</div>
+</section>
+
+<section id="points" class="page">
+<div class="card">
+<h2>🏆 Points Table</h2>
+<table><thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Points</th></tr></thead>
+<tbody id="standings"></tbody></table>
+<input id="newTeam" placeholder="New team name">
+<button class="green" onclick="addTeam()">Add Team</button>
+</div>
+</section>
+
+<section id="about" class="page">
+<div class="card">
+<h2>About Boundary Live</h2>
+<p>A cricket scoring website for your local tournament.</p>
+<p>Features include ball-by-ball scoring, wickets, overs, team management, a points table, and scorecard printing.</p>
+<p><b>Note:</b> This version stores data in the current browser only. Live updates between different phones require a database and hosting setup.</p>
+</div>
+</section>
 </main>
 
 <script>
-(() => {
-  const SUPABASE_URL = 'https://wwunfelaygptittgvlop.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_sU9Z2rmgkM2Y6St9tlrq2Q_paFW3ZVd';
-  const OPERATOR_EMAIL = 'ramaakilanbharathir@gmail.com';
+let A="Elandhai Paltans",B="Elandhai Super Kings";
+let runs=0,wickets=0,balls=0,limit=8,ended=false;
+let history=[],undoStack=[],squads={A:[],B:[]};
+let points=[
+{name:"Elandhai Paltans",p:0,w:0,l:0},
+{name:"Elandhai Super Kings",p:0,w:0,l:0},
+{name:"Elandhai Titans",p:0,w:0,l:0}
+];
 
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const $ = id => document.getElementById(id);
-
-  let match = null;
-  let busy = false;
-  let previousScore = null;
-
-  function say(text, error = false) {
-    $('message').textContent = text;
-    $('message').className = error ? 'error' : '';
-  }
-
-  function overText(balls) {
-    balls = Number(balls) || 0;
-    return Math.floor(balls / 6) + '.' + (balls % 6);
-  }
-
-  function draw(row) {
-    if (!row) {
-      $('summary').textContent =
-        'No match found. Add a match row to public.matches in Supabase.';
-      return;
-    }
-
-    match = row;
-    $('matchTitle').textContent = row.match_name || 'Elandhai Premier League';
-    $('teamA').textContent = row.team_a || 'Team A';
-    $('teamB').textContent = row.team_b || 'Team B';
-    $('runs').textContent = Number(row.runs) || 0;
-    $('wickets').textContent = Number(row.wicket) || 0;
-    $('overs').textContent = overText(row.balls);
-    $('summary').textContent =
-      `${row.team_a || 'Team A'}: ${Number(row.runs) || 0}/${Number(row.wicket) || 0} after ${overText(row.balls)} overs`;
-  }
-
-  async function loadMatch(showError = false) {
-    const { data, error } = await db
-      .from('matches')
-      .select('id,match_name,team_a,team_b,runs,wicket,balls,updated_at')
-      .order('updated_at', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      if (showError) say('Could not load score: ' + error.message, true);
-      return;
-    }
-
-    draw(data && data.length ? data[0] : null);
-  }
-
-  function isOperator(user) {
-    return !!user &&
-      (user.email || '').toLowerCase() === OPERATOR_EMAIL.toLowerCase();
-  }
-
-  async function updateAuthUI() {
-    const { data } = await db.auth.getSession();
-    let user = data?.session?.user;
-
-    if (user && !isOperator(user)) {
-      await db.auth.signOut();
-      user = null;
-      say('This account is not authorised as operator.', true);
-    }
-
-    $('operatorPanel').classList.toggle('hidden', !user);
-    $('loginOpen').classList.toggle('hidden', !!user);
-  }
-
-  async function updateScore(action, value = 0) {
-    if (busy || !match) return;
-
-    busy = true;
-    try {
-      const old = {
-        runs: Number(match.runs) || 0,
-        wicket: Number(match.wicket) || 0,
-        balls: Number(match.balls) || 0
-      };
-
-      const next = { ...old };
-
-      if (action === 'runs') {
-        next.runs += value;
-        next.balls += 1;
-        previousScore = old;
-      } else if (action === 'wicket') {
-        next.wicket += 1;
-        next.balls += 1;
-        previousScore = old;
-      } else if (action === 'wide' || action === 'noball') {
-        next.runs += 1;
-        previousScore = old;
-      } else if (action === 'reset') {
-        next.runs = 0;
-        next.wicket = 0;
-        next.balls = 0;
-        previousScore = null;
-      } else if (action === 'undo') {
-        if (!previousScore) {
-          say('No previous score to undo.', true);
-          return;
-        }
-        Object.assign(next, previousScore);
-        previousScore = null;
-      }
-
-      const { data, error } = await db
-        .from('matches')
-        .update({
-          runs: next.runs,
-          wicket: next.wicket,
-          balls: next.balls,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', match.id)
-        .select('id,match_name,team_a,team_b,runs,wicket,balls,updated_at')
-        .single();
-
-      if (error) {
-        say('Score update failed: ' + error.message +
-          '. Check operator login and Supabase RLS.', true);
-        return;
-      }
-
-      draw(data);
-      say('Score saved successfully.');
-    } finally {
-      busy = false;
-    }
-  }
-
-  $('loginOpen').onclick = () => {
-    $('loginPanel').classList.remove('hidden');
-    say('');
-  };
-
-  $('cancelLogin').onclick = () => {
-    $('loginPanel').classList.add('hidden');
-  };
-
-  $('loginForm').onsubmit = async event => {
-    event.preventDefault();
-    say('Signing in...');
-
-    const { data, error } = await db.auth.signInWithPassword({
-      email: $('email').value.trim(),
-      password: $('password').value
-    });
-
-    if (error) {
-      say('Login failed: ' + error.message, true);
-      return;
-    }
-
-    if (!isOperator(data.user)) {
-      await db.auth.signOut();
-      say('This email is not authorised as operator.', true);
-      return;
-    }
-
-    $('loginPanel').classList.add('hidden');
-    await updateAuthUI();
-    say('Operator signed in.');
-  };
-
-  document.querySelectorAll('[data-runs]').forEach(button => {
-    button.onclick = () =>
-      updateScore('runs', Number(button.dataset.runs));
-  });
-
-  $('addWicket').onclick = () => updateScore('wicket');
-  $('wide').onclick = () => updateScore('wide');
-  $('noBall').onclick = () => updateScore('noball');
-
-  $('resetScore').onclick = () => {
-    if (confirm('Reset the score to 0/0 and 0.0 overs?')) {
-      updateScore('reset');
-    }
-  };
-
-  $('undoBall').onclick = () => updateScore('undo');
-
-  $('logout').onclick = async () => {
-    await db.auth.signOut();
-    await updateAuthUI();
-    say('Signed out. View-only mode.');
-  };
-
-  db.auth.onAuthStateChange(() => {
-    updateAuthUI();
-  });
-
-  db.channel('matches-live-score')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'matches'
-    }, payload => {
-      if (payload.new && (!match || payload.new.id === match.id)) {
-        draw(payload.new);
-      } else {
-        loadMatch();
-      }
-    })
-    .subscribe();
-
-  loadMatch(true);
-  updateAuthUI();
-  setInterval(() => loadMatch(false), 5000);
-})();
+function show(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ renderSquads();renderPoints();
+}
+function overText(){return Math.floor(balls/6)+"."+(balls%6)}
+function saveUndo(){
+ undoStack.push({runs,wickets,balls,ended,history:[...history]});
+ if(undoStack.length>50)undoStack.shift();
+}
+function score(n){
+ if(ended)return alert("Innings ended. Start a new match.");
+ if(balls>=limit*6){endMatch();return}
+ saveUndo();runs+=n;balls++;
+ history.unshift({ball:balls,runs:n,wickets,overs:overText(),label:String(n)});
+ if(balls>=limit*6)ended=true;
+ render();
+}
+function wicket(){
+ if(ended)return alert("Innings ended.");
+ if(balls>=limit*6){endMatch();return}
+ saveUndo();wickets++;balls++;
+ history.unshift({ball:balls,runs:0,wickets,overs:overText(),label:"W"});
+ if(wickets>=10||balls>=limit*6)ended=true;
+ render();
+}
+function extra(){
+ if(ended)return alert("Innings ended.");
+ saveUndo();runs++;
+ history.unshift({ball:balls,runs:1,wickets,overs:overText(),label:"Extra"});
+ render();
+}
+function undo(){
+ if(!undoStack.length)return alert("Nothing to undo.");
+ let s=undoStack.pop();
+ runs=s.runs;wickets=s.wickets;balls=s.balls;ended=s.ended;history=s.history;
+ render();
+}
+function endMatch(){ended=true;render()}
+function newMatch(){
+ if(!confirm("Start a new match and reset the score?"))return;
+ runs=0;wickets=0;balls=0;ended=false;history=[];undoStack=[];render();
+}
+function setup(){
+ A=document.getElementById("teamA").value.trim()||"Team A";
+ B=document.getElementById("teamB").value.trim()||"Team B";
+ limit=Math.max(1,Math.min(50,Number(document.getElementById("limit").value)||8));
+ document.getElementById("teamAView").textContent=A;
+ document.getElementById("teamBView").textContent=B;
+ document.querySelector('#whichTeam option[value="A"]').textContent=A;
+ document.querySelector('#whichTeam option[value="B"]').textContent=B;
+ if(!points.some(p=>p.name===A))points.push({name:A,p:0,w:0,l:0});
+ if(!points.some(p=>p.name===B))points.push({name:B,p:0,w:0,l:0});
+ renderPoints();alert("Match setup saved.");
+}
+function render(){
+ document.getElementById("runs").textContent=runs;
+ document.getElementById("wickets").textContent=wickets;
+ document.getElementById("overs").textContent=overText();
+ document.getElementById("status").textContent=ended?"● INNINGS ENDED":"● LIVE MATCH";
+ document.getElementById("result").textContent=ended?
+ "Innings complete: "+runs+"/"+wickets:
+ A+" need "+Math.max(0,limit*6-balls)+" balls to complete the innings.";
+ document.getElementById("history").innerHTML=history.map(h=>
+ `<tr><td>${h.ball}</td><td>${h.label}</td><td>${h.wickets}</td><td>${h.overs}</td></tr>`
+ ).join("");
+}
+function addPlayer(){
+ let name=document.getElementById("player").value.trim();
+ if(!name)return alert("Enter a player name.");
+ let k=document.getElementById("whichTeam").value;
+ squads[k].push({name,role:document.getElementById("role").value});
+ document.getElementById("player").value="";
+ renderSquads();
+}
+function renderSquads(){
+ document.getElementById("squads").innerHTML=["A","B"].map(k=>
+ `<div class="card"><h3>${k==="A"?A:B}</h3>`+
+ squads[k].map((p,i)=>`<p>${p.name} — ${p.role} <button onclick="removePlayer('${k}',${i})">Remove</button></p>`).join("")+
+ `</div>`).join("");
+}
+function removePlayer(k,i){squads[k].splice(i,1);renderSquads()}
+function addTeam(){
+ let name=document.getElementById("newTeam").value.trim();
+ if(!name)return alert("Enter a team name.");
+ if(points.some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert("Team already exists.");
+ points.push({name,p:0,w:0,l:0});
+ document.getElementById("newTeam").value="";renderPoints();
+}
+function renderPoints(){
+ document.getElementById("standings").innerHTML=points.slice().sort((a,b)=>(b.w-a.w)).map(p=>
+ `<tr><td>${p.name}</td><td>${p.p}</td><td>${p.w}</td><td>${p.l}</td><td>${p.w*2}</td></tr>`
+ ).join("");
+}
+function downloadPDF(){window.print()}
+function shareScore(){
+ let text=`${A} ${runs}/${wickets} (${overText()} overs) vs ${B}`;
+ if(navigator.share)navigator.share({title:"Cricket Score",text});
+ else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Score copied!")).catch(()=>alert(text));
+ else alert(text);
+}
+render();renderSquads();renderPoints();
 </script>
 </body>
 </html>
