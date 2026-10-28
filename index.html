@@ -1,1 +1,366 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boundary Live - Cricket Scorecard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eef3ef;color:#172b20}
+header{background:#075b39;color:white;padding:18px}
+header h1{margin:0 0 12px}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+button{border:0;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer}
+nav button{background:#19734c;color:white}
+main{max-width:1000px;margin:auto;padding:15px}
+section,.card{background:white;border-radius:14px;padding:18px;margin-bottom:15px;box-shadow:0 3px 12px #0000000c}
+.score{background:linear-gradient(135deg,#073c29,#128452);color:white;text-align:center}
+.teams{display:flex;justify-content:space-around;align-items:center;gap:12px;flex-wrap:wrap}
+.team{flex:1;min-width:110px}
+.runs{font-size:42px;font-weight:bold;margin:12px 0}
+.small{color:#d3eadb}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:13px;font-weight:bold}
+input,select{width:100%;padding:11px;border:1px solid #ccd8ce;border-radius:8px;margin-top:5px;background:white;color:#172b20}
+.field{margin-bottom:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.primary{background:#087747;color:white}
+.soft{background:#e4f2e8;color:#075b39}
+.score-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:15px}
+.score-buttons button{background:#e4f2e8;color:#075b39;font-size:17px}
+.score-buttons .four{background:#168b50;color:white}
+.score-buttons .six{background:#075b39;color:white}
+.score-buttons .out{background:#ffe3e3;color:#b21d2b}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 5px;border-bottom:1px solid #e5ece6;text-align:center}
+th:first-child,td:first-child{text-align:left}
+.table-wrap{overflow-x:auto}
+.ball{display:inline-block;padding:9px;margin:3px;background:#e3f1e6;border-radius:50%;min-width:34px;text-align:center}
+.hidden{display:none!important}
+.player{padding:10px;background:#f0f5f1;margin:7px 0;border-radius:8px;display:flex;justify-content:space-between;gap:8px}
+footer{text-align:center;padding:20px;color:#607469;font-size:12px}
+@media(max-width:500px){.grid{grid-template-columns:1fr}.runs{font-size:34px}main{padding:10px}section,.card{padding:14px}}
+</style>
+</head>
+<body>
+<header>
+<h1>🏏 BOUNDARY LIVE</h1>
+<nav>
+<button onclick="page('live')">Live Score</button>
+<button onclick="page('teams')">Teams & Players</button>
+<button onclick="page('points')">Points Table</button>
+<button onclick="page('about')">About</button>
+</nav>
+</header>
+<main>
+
+<div id="live">
+<section class="score">
+<div>🔴 <b id="status">LIVE MATCH</b></div>
+<h2 id="matchTitle">Friendly Match</h2>
+<div class="teams">
+<div class="team">
+<h3 id="teamAName">Elandhai Paltans</h3>
+<div class="runs"><span id="runs">0</span>/<span id="wickets">0</span></div>
+<div class="small"><span id="overs">0.0</span> overs</div>
+</div>
+<div>VS</div>
+<div class="team">
+<h3 id="teamBName">Elandhai Super Kings</h3>
+<p id="opponent">Yet to bat</p>
+</div>
+</div>
+<p id="summary">Match ready. Start scoring!</p>
+<div class="actions" style="justify-content:center">
+<button onclick="downloadScore()">Download Scorecard</button>
+<button onclick="shareScore()">Share Score</button>
+</div>
+</section>
+
+<section>
+<h2>⚙️ Match Setup</h2>
+<div class="grid">
+<div class="field"><label>Batting team</label><input id="inputA" value="Elandhai Paltans"></div>
+<div class="field"><label>Bowling team</label><input id="inputB" value="Elandhai Super Kings"></div>
+<div class="field"><label>Match name</label><input id="inputTitle" value="Friendly Match"></div>
+<div class="field"><label>Overs per innings</label><input id="inputOvers" type="number" value="8" min="1" max="50"></div>
+</div>
+<button class="primary" onclick="saveSetup()">Save Match Setup</button>
+</section>
+
+<section>
+<h2>🏏 Live Scoring</h2>
+<div class="grid">
+<div class="field"><label>Striker</label><select id="striker"></select></div>
+<div class="field"><label>Non-striker</label><select id="nonStriker"></select></div>
+<div class="field"><label>Bowler</label><select id="bowler"></select></div>
+</div>
+<div class="score-buttons">
+<button onclick="score(0)">0</button>
+<button onclick="score(1)">1</button>
+<button onclick="score(2)">2</button>
+<button onclick="score(3)">3</button>
+<button class="four" onclick="score(4)">4</button>
+<button class="six" onclick="score(6)">6</button>
+<button class="out" onclick="wicket()">Wicket</button>
+<button onclick="undo()">↶ Undo</button>
+<button onclick="extra('Wide')">+ Wide</button>
+<button onclick="extra('No-ball')">+ No-ball</button>
+<button onclick="endInnings()">End Innings</button>
+<button onclick="newMatch()">New Match</button>
+</div>
+<p id="notice">Tap a button for every ball.</p>
+</section>
+
+<section>
+<h2>🏏 Batting Scorecard</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Batter</th><th>Runs</th><th>Balls</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>
+<tbody id="battingRows"></tbody>
+</table></div>
+<p id="extras">Extras: 0</p>
+</section>
+
+<section>
+<h2>🎯 Bowling Scorecard</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bowler</th><th>Overs</th><th>Runs</th><th>Wickets</th><th>Economy</th></tr></thead>
+<tbody id="bowlingRows"></tbody>
+</table></div>
+</section>
+
+<section>
+<h2>Recent Balls</h2>
+<div id="recent"></div>
+</section>
+</div>
+
+<div id="teams" class="hidden">
+<section>
+<h2>👥 Teams & Players</h2>
+<div class="field"><label>Choose team</label>
+<select id="teamChoice"><option value="A">Elandhai Paltans</option><option value="B">Elandhai Super Kings</option></select></div>
+<div class="field"><label>Player name</label><input id="playerName" placeholder="Enter player name"></div>
+<div class="field"><label>Player role</label>
+<select id="playerRole"><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>Wicketkeeper</option></select></div>
+<button class="primary" onclick="addPlayer()">+ Add Player</button>
+<h3 id="squadTitle">Squad</h3>
+<div id="squad"></div>
+</section>
+</div>
+
+<div id="points" class="hidden">
+<section>
+<h2>🏆 Tournament Points Table</h2>
+<button class="primary" onclick="addTeam()">+ Add Team</button>
+<div class="table-wrap"><table>
+<thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Pts</th></tr></thead>
+<tbody id="pointsRows"></tbody>
+</table></div>
+<p>Points: 2 for each win.</p>
+</section>
+</div>
+
+<div id="about" class="hidden">
+<section>
+<h2>About Boundary Live</h2>
+<p>A simple cricket scoring website for local tournaments.</p>
+<ul>
+<li>Ball-by-ball scoring</li>
+<li>Batting and bowling scorecards</li>
+<li>Team and player management</li>
+<li>Tournament points table</li>
+<li>Downloadable scorecard</li>
+<li>Mobile-friendly design</li>
+</ul>
+<p>Note: This version runs in your browser. Live syncing between different phones requires a database and backend server.</p>
+</section>
+</div>
+
+</main>
+<footer>BOUNDARY LIVE · Every ball tells a story 🏏</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let teamA="Elandhai Paltans",teamB="Elandhai Super Kings";
+let matchName="Friendly Match",limit=8,ended=false;
+let batters=[
+{name:"Player 1",r:0,b:0,f:0,s:0,out:false},
+{name:"Player 2",r:0,b:0,f:0,s:0,out:false}
+];
+let bowlers=[{name:"Bowler 1",balls:0,r:0,w:0}];
+let runs=0,wickets=0,balls=0,extras=0,recent=[],history=[];
+let squads={A:[],B:[]};
+let points=[
+{name:"Elandhai Paltans",p:0,w:0,l:0},
+{name:"Elandhai Super Kings",p:0,w:0,l:0},
+{name:"Elandhai Titans",p:0,w:0,l:0}
+];
+
+function page(p){
+["live","teams","points","about"].forEach(x=>$(x).classList.toggle("hidden",x!==p));
+if(p==="teams")renderSquad();
+if(p==="points")renderPoints();
+}
+function overText(b){return Math.floor(b/6)+"."+b%6}
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function saveSetup(){
+teamA=$("inputA").value.trim()||"Team A";
+teamB=$("inputB").value.trim()||"Team B";
+matchName=$("inputTitle").value.trim()||"Cricket Match";
+limit=Math.max(1,Math.min(50,Number($("inputOvers").value)||8));
+$("teamAName").textContent=teamA;
+$("teamBName").textContent=teamB;
+$("matchTitle").textContent=matchName;
+$("teamChoice").options[0].text=teamA;
+$("teamChoice").options[1].text=teamB;
+if(!points.some(p=>p.name===teamA))points.push({name:teamA,p:0,w:0,l:0});
+if(!points.some(p=>p.name===teamB))points.push({name:teamB,p:0,w:0,l:0});
+render();
+$("notice").textContent="Match setup saved!";
+}
+function fillSelects(){
+let alive=batters.filter(b=>!b.out);
+["striker","nonStriker"].forEach((id,i)=>{
+let s=$(id),old=s.value;
+s.innerHTML="";
+alive.forEach(b=>s.add(new Option(b.name,b.name)));
+if(alive.some(b=>b.name===old))s.value=old;
+else if(alive.length)s.selectedIndex=Math.min(i,alive.length-1);
+});
+let b=$("bowler"),old=b.value;
+b.innerHTML="";
+bowlers.forEach(x=>b.add(new Option(x.name,x.name)));
+if(!bowlers.some(x=>x.name===old)){
+b.add(new Option("New Bowler","New Bowler"));b.value="New Bowler";
+}else b.value=old;
+}
+function saveHistory(){
+history.push(JSON.stringify({runs,wickets,balls,extras,ended,batters,bowlers,recent}));
+if(history.length>50)history.shift();
+}
+function score(n){
+if(ended){$("notice").textContent="Innings ended. Start a new match.";return}
+if(balls>=limit*6){endInnings();return}
+let striker=$("striker").value,non=$("nonStriker").value,bn=$("bowler").value;
+let bat=batters.find(x=>x.name===striker&&!x.out);
+if(!bat){$("notice").textContent="Add another batter in Teams & Players.";return}
+saveHistory();
+let bowl=bowlers.find(x=>x.name===bn);
+if(!bowl){bowl={name:bn,balls:0,r:0,w:0};bowlers.push(bowl)}
+runs+=n;bat.r+=n;bat.b++;bowl.r+=n;bowl.balls++;
+if(n===4)bat.f++;
+if(n===6)bat.s++;
+balls++;
+if(n%2===1)swap();
+if(balls%6===0)swap();
+recent.push(String(n));recent=recent.slice(-12);
+if(wickets>=10||balls>=limit*6)ended=true;
+$("notice").textContent="Recorded "+n+" run(s).";
+render();
+}
+function swap(){
+let a=$("striker").value,b=$("nonStriker").value;
+if(a&&b){$("striker").value=b;$("nonStriker").value=a}
+}
+function wicket(){
+if(ended)return;
+if(wickets>=10)return;
+let bat=batters.find(x=>x.name===$("striker").value&&!x.out);
+if(!bat)return;
+saveHistory();
+let bowl=bowlers.find(x=>x.name===$("bowler").value);
+if(!bowl){bowl={name:$("bowler").value,balls:0,r:0,w:0};bowlers.push(bowl)}
+bat.b++;bat.out=true;wickets++;balls++;bowl.balls++;bowl.w++;
+recent.push("W");recent=recent.slice(-12);
+if(wickets>=10||balls>=limit*6)ended=true;
+render();
+$("notice").textContent="Wicket recorded!";
+}
+function extra(type){
+if(ended)return;
+saveHistory();
+runs++;extras++;
+let bowl=bowlers.find(x=>x.name===$("bowler").value);
+if(!bowl){bowl={name:$("bowler").value,balls:0,r:0,w:0};bowlers.push(bowl)}
+bowl.r++;
+recent.push(type==="Wide"?"Wd":"Nb");recent=recent.slice(-12);
+render();
+$("notice").textContent=type+" recorded. One extra run added.";
+}
+function undo(){
+if(!history.length){$("notice").textContent="Nothing to undo.";return}
+let s=JSON.parse(history.pop());
+runs=s.runs;wickets=s.wickets;balls=s.balls;extras=s.extras;ended=s.ended;
+batters=s.batters;bowlers=s.bowlers;recent=s.recent;
+render();$("notice").textContent="Last action undone.";
+}
+function endInnings(){ended=true;$("status").textContent="INNINGS ENDED";render()}
+function newMatch(){
+if(!confirm("Start a new match and reset the score?"))return;
+runs=0;wickets=0;balls=0;extras=0;recent=[];history=[];ended=false;
+batters.forEach(b=>{b.r=0;b.b=0;b.f=0;b.s=0;b.out=false});
+bowlers.forEach(b=>{b.balls=0;b.r=0;b.w=0});
+$("status").textContent="LIVE MATCH";render();
+}
+function render(){
+$("runs").textContent=runs;$("wickets").textContent=wickets;
+$("overs").textContent=overText(balls);
+$("status").textContent=ended?"INNINGS ENDED":"LIVE MATCH";
+$("summary").textContent=ended?"Innings complete: "+runs+"/"+wickets+" ("+overText(balls)+" overs)":teamA+" scored "+runs+"/"+wickets+" in "+overText(balls)+" overs.";
+$("extras").textContent="Extras: "+extras+" · Total: "+runs+"/"+wickets;
+$("battingRows").innerHTML=batters.map(b=>`<tr><td>${safe(b.name)}${b.out?" (out)":""}</td><td>${b.r}</td><td>${b.b}</td><td>${b.f}</td><td>${b.s}</td><td>${b.b?(100*b.r/b.b).toFixed(1):"0.0"}</td></tr>`).join("");
+$("bowlingRows").innerHTML= bowlers.map(b=>`<tr><td>${safe(b.name)}</td><td>${overText(b.balls)}</td><td>${b.r}</td><td>${b.w}</td><td>${b.balls?(b.r/(b.balls/6)).toFixed(1):"0.0"}</td></tr>`).join("");
+$("recent").innerHTML=recent.slice().reverse().map(x=>`<span class="ball">${safe(x)}</span>`).join("")||"No balls recorded yet.";
+fillSelects();renderSquad();renderPoints();
+}
+function addPlayer(){
+let name=$("playerName").value.trim();
+if(!name){alert("Enter a player name.");return}
+let k=$("teamChoice").value;
+squads[k].push({name,role:$("playerRole").value});
+if(k==="A"&&batters.length<11)batters.push({name,r:0,b:0,f:0,s:0,out:false});
+$("playerName").value="";
+renderSquad();render();
+}
+function renderSquad(){
+let k=$("teamChoice").value;
+$("squadTitle").textContent=(k==="A"?teamA:teamB)+" squad";
+$("squad").innerHTML=squads[k].map((p,i)=>`<div class="player"><span>${safe(p.name)} · ${safe(p.role)}</span><button onclick="removePlayer(${i})">Remove</button></div>`).join("")||"<p>No players added yet.</p>";
+}
+function removePlayer(i){
+squads[$("teamChoice").value].splice(i,1);renderSquad();
+}
+$("teamChoice").addEventListener("change",renderSquad);
+function renderPoints(){
+$("pointsRows").innerHTML=points.slice().sort((a,b)=>b.w-a.w).map((p,i)=>`<tr><td>${i+1}. ${safe(p.name)}</td><td>${p.p}</td><td>${p.w}</td><td>${p.l}</td><td>${p.w*2}</td></tr>`).join("");
+}
+function addTeam(){
+let name=prompt("Enter the new team name:");
+if(!name||!name.trim())return;
+if(points.some(p=>p.name.toLowerCase()===name.trim().toLowerCase())){alert("Team already exists.");return}
+points.push({name:name.trim(),p:0,w:0,l:0});renderPoints();
+}
+function downloadScore(){
+let text="BOUNDARY LIVE - SCORECARD\n"+matchName+"\n"+teamA+" vs "+teamB+"\nScore: "+runs+"/"+wickets+"\nOvers: "+overText(balls)+"\nExtras: "+extras+"\n\nBATTING\n";
+text+="Player | Runs | Balls | 4s | 6s\n";
+batters.forEach(b=>text+=b.name+" | "+b.r+" | "+b.b+" | "+b.f+" | "+b.s+"\n");
+text+="\nBOWLING\n";
+bowlers.forEach(b=>text+=b.name+" | "+overText(b.balls)+" overs | "+b.r+" runs | "+b.w+" wickets\n");
+let blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+let url=URL.createObjectURL(blob),a=document.createElement("a");
+a.href=url;a.download="Boundary-Live-Scorecard.txt";a.click();
+URL.revokeObjectURL(url);
+}
+function shareScore(){
+let text=teamA+" "+runs+"/"+wickets+" ("+overText(balls)+" overs) vs "+teamB;
+if(navigator.share)navigator.share({title:"Boundary Live Score",text:text}).catch(()=>{});
+else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Score copied!")).catch(()=>prompt("Copy this score:",text));
+else prompt("Copy this score:",text);
+}
+render();
+</script>
+</body>
+</html>
+
