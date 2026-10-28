@@ -4,363 +4,510 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ELANDAI PREMIER LEAGUE</title>
+<title>Elandhai Premier League</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#eef3ef;color:#172b20}
-header{background:#075b39;color:white;padding:18px}
-header h1{margin:0 0 12px}
-nav{display:flex;gap:8px;flex-wrap:wrap}
-button{border:0;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer}
-nav button{background:#19734c;color:white}
-main{max-width:1000px;margin:auto;padding:15px}
-section,.card{background:white;border-radius:14px;padding:18px;margin-bottom:15px;box-shadow:0 3px 12px #0000000c}
-.score{background:linear-gradient(135deg,#073c29,#128452);color:white;text-align:center}
-.teams{display:flex;justify-content:space-around;align-items:center;gap:12px;flex-wrap:wrap}
-.team{flex:1;min-width:110px}
-.runs{font-size:42px;font-weight:bold;margin:12px 0}
-.small{color:#d3eadb}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{font-size:13px;font-weight:bold}
-input,select{width:100%;padding:11px;border:1px solid #ccd8ce;border-radius:8px;margin-top:5px;background:white;color:#172b20}
-.field{margin-bottom:10px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.primary{background:#087747;color:white}
-.soft{background:#e4f2e8;color:#075b39}
-.score-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:15px}
-.score-buttons button{background:#e4f2e8;color:#075b39;font-size:17px}
-.score-buttons .four{background:#168b50;color:white}
-.score-buttons .six{background:#075b39;color:white}
-.score-buttons .out{background:#ffe3e3;color:#b21d2b}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:10px 5px;border-bottom:1px solid #e5ece6;text-align:center}
-th:first-child,td:first-child{text-align:left}
-.table-wrap{overflow-x:auto}
-.ball{display:inline-block;padding:9px;margin:3px;background:#e3f1e6;border-radius:50%;min-width:34px;text-align:center}
+body{margin:0;background:#07130d;color:#effff3;font-family:Arial,sans-serif}
+header{background:#0b6b43;padding:18px;text-align:center}
+header h1{margin:0;font-size:23px}
+header p{margin:7px 0 0;font-size:12px}
+main{max-width:750px;margin:auto;padding:16px}
+.card{background:#13231a;border:1px solid #2b4834;border-radius:15px;padding:18px;margin-bottom:16px}
+h2{font-size:19px;margin:0 0 14px}
+input,button,textarea{font:inherit;border-radius:9px;padding:12px;width:100%;margin:5px 0}
+input,textarea{background:#09140d;color:white;border:1px solid #42604b}
+button{border:0;background:#13a86b;color:white;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.secondary{background:#263a2d}
+.danger{background:#9c2635}
+.score{display:flex;justify-content:space-around;gap:10px;text-align:center;padding:20px 0}
+.score strong{font-size:35px;display:block}
+.team{width:45%;overflow-wrap:anywhere}
+.status{color:#70efa9;font-size:12px;font-weight:bold}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.grid button{padding:15px 5px}
 .hidden{display:none!important}
-.player{padding:10px;background:#f0f5f1;margin:7px 0;border-radius:8px;display:flex;justify-content:space-between;gap:8px}
-footer{text-align:center;padding:20px;color:#607469;font-size:12px}
-@media(max-width:500px){.grid{grid-template-columns:1fr}.runs{font-size:34px}main{padding:10px}section,.card{padding:14px}}
+.small{font-size:13px;color:#b8cbbb;line-height:1.5}
+#message{padding:10px;border-radius:8px;background:#203729;margin:10px 0;overflow-wrap:anywhere}
+.player{padding:9px;border-bottom:1px solid #2b4834}
+a{color:#7cf0ad}
+@media(max-width:450px){main{padding:10px}.card{padding:14px}.score strong{font-size:29px}}
 </style>
 </head>
+
 <body>
 <header>
-<h1>🏏 BOUNDARY LIVE</h1>
-<nav>
-<button onclick="page('live')">Live Score</button>
-<button onclick="page('teams')">Teams & Players</button>
-<button onclick="page('points')">Points Table</button>
-<button onclick="page('about')">About</button>
-</nav>
+  <h1>🏏 ELANDHAI PREMIER LEAGUE</h1>
+  <p>YOUR CRICKET. YOUR SCOREBOARD.</p>
 </header>
+
 <main>
+  <div id="message" role="status">Connecting to scoreboard...</div>
 
-<div id="live">
-<section class="score">
-<div>🔴 <b id="status">LIVE MATCH</b></div>
-<h2 id="matchTitle">Friendly Match</h2>
-<div class="teams">
-<div class="team">
-<h3 id="teamAName">Elandhai Paltans</h3>
-<div class="runs"><span id="runs">0</span>/<span id="wickets">0</span></div>
-<div class="small"><span id="overs">0.0</span> overs</div>
-</div>
-<div>VS</div>
-<div class="team">
-<h3 id="teamBName">Elandhai Super Kings</h3>
-<p id="opponent">Yet to bat</p>
-</div>
-</div>
-<p id="summary">Match ready. Start scoring!</p>
-<div class="actions" style="justify-content:center">
-<button onclick="downloadScore()">Download Scorecard</button>
-<button onclick="shareScore()">Share Score</button>
-</div>
-</section>
+  <section class="card">
+    <h2>Live Score</h2>
+    <div class="status" id="liveStatus">● LIVE SCORE</div>
+    <div class="score">
+      <div class="team">
+        <strong id="teamA">Team A</strong>
+        <strong id="score">0/0</strong>
+        <span id="overs">0.0 overs</span>
+      </div>
+      <div class="team">
+        <strong>VS</strong>
+        <div id="teamB">Team B</div>
+      </div>
+    </div>
+    <p id="matchName" class="small">Loading match...</p>
+    <p class="small">Score automatically refreshes for viewers. Keep this page open to follow the match.</p>
+    <button id="shareBtn">Share Match Link</button>
+    <button id="printBtn" class="secondary">Print / Save Scorecard PDF</button>
+  </section>
 
-<section>
-<h2>⚙️ Match Setup</h2>
-<div class="grid">
-<div class="field"><label>Batting team</label><input id="inputA" value="Elandhai Paltans"></div>
-<div class="field"><label>Bowling team</label><input id="inputB" value="Elandhai Super Kings"></div>
-<div class="field"><label>Match name</label><input id="inputTitle" value="Friendly Match"></div>
-<div class="field"><label>Overs per innings</label><input id="inputOvers" type="number" value="8" min="1" max="50"></div>
-</div>
-<button class="primary" onclick="saveSetup()">Save Match Setup</button>
-</section>
+  <section class="card">
+    <h2>Scorer Login</h2>
+    <p class="small">Only the authorised scorer can update the score.</p>
+    <div id="loginArea">
+      <input id="email" type="email" placeholder="Scorer email" autocomplete="username">
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+      <button id="loginBtn">Login as Scorer</button>
+    </div>
+    <div id="sessionArea" class="hidden">
+      <p id="loggedInAs" class="small"></p>
+      <button id="logoutBtn" class="secondary">Logout</button>
+    </div>
+  </section>
 
-<section>
-<h2>🏏 Live Scoring</h2>
-<div class="grid">
-<div class="field"><label>Striker</label><select id="striker"></select></div>
-<div class="field"><label>Non-striker</label><select id="nonStriker"></select></div>
-<div class="field"><label>Bowler</label><select id="bowler"></select></div>
-</div>
-<div class="score-buttons">
-<button onclick="score(0)">0</button>
-<button onclick="score(1)">1</button>
-<button onclick="score(2)">2</button>
-<button onclick="score(3)">3</button>
-<button class="four" onclick="score(4)">4</button>
-<button class="six" onclick="score(6)">6</button>
-<button class="out" onclick="wicket()">Wicket</button>
-<button onclick="undo()">↶ Undo</button>
-<button onclick="extra('Wide')">+ Wide</button>
-<button onclick="extra('No-ball')">+ No-ball</button>
-<button onclick="endInnings()">End Innings</button>
-<button onclick="newMatch()">New Match</button>
-</div>
-<p id="notice">Tap a button for every ball.</p>
-</section>
+  <section class="card hidden" id="scorerPanel">
+    <h2>Scorer Dashboard</h2>
+    <p class="small">Tap the correct result after each delivery.</p>
+    <div class="grid">
+      <button data-runs="0">Dot ball (0)</button>
+      <button data-runs="1">1 Run</button>
+      <button data-runs="2">2 Runs</button>
+      <button data-runs="3">3 Runs</button>
+      <button data-runs="4">FOUR</button>
+      <button data-runs="6">SIX</button>
+      <button id="wicketBtn" class="danger">Wicket</button>
+      <button id="wideBtn" class="secondary">Wide (+1)</button>
+      <button id="undoBtn" class="secondary">Undo Last Ball</button>
+    </div>
+    <p class="small">Wide adds one run without counting a legal ball. This basic scorer does not yet handle all cricket extras or batter/bowler statistics.</p>
+  </section>
 
-<section>
-<h2>🏏 Batting Scorecard</h2>
-<div class="table-wrap"><table>
-<thead><tr><th>Batter</th><th>Runs</th><th>Balls</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>
-<tbody id="battingRows"></tbody>
-</table></div>
-<p id="extras">Extras: 0</p>
-</section>
+  <section class="card">
+    <h2>Import Squad from PDF</h2>
+    <p class="small">Scorer login required. Choose a text-based PDF to extract player names. Scanned image PDFs may not work.</p>
+    <div id="pdfArea" class="hidden">
+      <input type="file" id="pdfFile" accept=".pdf,application/pdf">
+      <button id="extractBtn">Extract Player Names</button>
+      <textarea id="playerNames" rows="6" placeholder="Extracted player names will appear here, one per line."></textarea>
+      <button id="downloadNamesBtn" class="secondary">Download Names as Text</button>
+    </div>
+    <p id="pdfHelp" class="small">Login with the authorised scorer account to use PDF import.</p>
+  </section>
 
-<section>
-<h2>🎯 Bowling Scorecard</h2>
-<div class="table-wrap"><table>
-<thead><tr><th>Bowler</th><th>Overs</th><th>Runs</th><th>Wickets</th><th>Economy</th></tr></thead>
-<tbody id="bowlingRows"></tbody>
-</table></div>
-</section>
-
-<section>
-<h2>Recent Balls</h2>
-<div id="recent"></div>
-</section>
-</div>
-
-<div id="teams" class="hidden">
-<section>
-<h2>👥 Teams & Players</h2>
-<div class="field"><label>Choose team</label>
-<select id="teamChoice"><option value="A">Elandhai Paltans</option><option value="B">Elandhai Super Kings</option></select></div>
-<div class="field"><label>Player name</label><input id="playerName" placeholder="Enter player name"></div>
-<div class="field"><label>Player role</label>
-<select id="playerRole"><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>Wicketkeeper</option></select></div>
-<button class="primary" onclick="addPlayer()">+ Add Player</button>
-<h3 id="squadTitle">Squad</h3>
-<div id="squad"></div>
-</section>
-</div>
-
-<div id="points" class="hidden">
-<section>
-<h2>🏆 Tournament Points Table</h2>
-<button class="primary" onclick="addTeam()">+ Add Team</button>
-<div class="table-wrap"><table>
-<thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Pts</th></tr></thead>
-<tbody id="pointsRows"></tbody>
-</table></div>
-<p>Points: 2 for each win.</p>
-</section>
-</div>
-
-<div id="about" class="hidden">
-<section>
-<h2>About Boundary Live</h2>
-<p>A simple cricket scoring website for local tournaments.</p>
-<ul>
-<li>Ball-by-ball scoring</li>
-<li>Batting and bowling scorecards</li>
-<li>Team and player management</li>
-<li>Tournament points table</li>
-<li>Downloadable scorecard</li>
-<li>Mobile-friendly design</li>
-</ul>
-<p>Note: This version runs in your browser. Live syncing between different phones requires a database and backend server.</p>
-</section>
-</div>
-
+  <footer class="small" style="text-align:center;padding:15px">
+    Elandhai Premier League · Community Cricket
+  </footer>
 </main>
-<footer>BOUNDARY LIVE · Every ball tells a story 🏏</footer>
 
 <script>
-const $=id=>document.getElementById(id);
-let teamA="Elandhai Paltans",teamB="Elandhai Super Kings";
-let matchName="Friendly Match",limit=8,ended=false;
-let batters=[
-{name:"Player 1",r:0,b:0,f:0,s:0,out:false},
-{name:"Player 2",r:0,b:0,f:0,s:0,out:false}
-];
-let bowlers=[{name:"Bowler 1",balls:0,r:0,w:0}];
-let runs=0,wickets=0,balls=0,extras=0,recent=[],history=[];
-let squads={A:[],B:[]};
-let points=[
-{name:"Elandhai Paltans",p:0,w:0,l:0},
-{name:"Elandhai Super Kings",p:0,w:0,l:0},
-{name:"Elandhai Titans",p:0,w:0,l:0}
-];
+const SUPABASE_URL = "https://wwunfelaygptittgvlop.supabase.co";
+const SUPABASE_KEY = "sb_publishable_sU9Z2rmgkM2Y6St9tlrq2Q_paFW3ZVd";
+const SCORER_EMAIL = "ramaakilanbharathir@gmail.com";
 
-function page(p){
-["live","teams","points","about"].forEach(x=>$(x).classList.toggle("hidden",x!==p));
-if(p==="teams")renderSquad();
-if(p==="points")renderPoints();
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+
+let match = null;
+let user = null;
+let undoStack = [];
+let busy = false;
+
+function say(text) {
+  $("message").textContent = text;
 }
-function overText(b){return Math.floor(b/6)+"."+b%6}
-function safe(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function saveSetup(){
-teamA=$("inputA").value.trim()||"Team A";
-teamB=$("inputB").value.trim()||"Team B";
-matchName=$("inputTitle").value.trim()||"Cricket Match";
-limit=Math.max(1,Math.min(50,Number($("inputOvers").value)||8));
-$("teamAName").textContent=teamA;
-$("teamBName").textContent=teamB;
-$("matchTitle").textContent=matchName;
-$("teamChoice").options[0].text=teamA;
-$("teamChoice").options[1].text=teamB;
-if(!points.some(p=>p.name===teamA))points.push({name:teamA,p:0,w:0,l:0});
-if(!points.some(p=>p.name===teamB))points.push({name:teamB,p:0,w:0,l:0});
-render();
-$("notice").textContent="Match setup saved!";
+
+function isScorer() {
+  return !!user &&
+    user.email?.toLowerCase() === SCORER_EMAIL.toLowerCase();
 }
-function fillSelects(){
-let alive=batters.filter(b=>!b.out);
-["striker","nonStriker"].forEach((id,i)=>{
-let s=$(id),old=s.value;
-s.innerHTML="";
-alive.forEach(b=>s.add(new Option(b.name,b.name)));
-if(alive.some(b=>b.name===old))s.value=old;
-else if(alive.length)s.selectedIndex=Math.min(i,alive.length-1);
+
+function refreshPermissions() {
+  $("loginArea").classList.toggle("hidden", !!user);
+  $("sessionArea").classList.toggle("hidden", !user);
+  $("scorerPanel").classList.toggle("hidden", !isScorer());
+  $("pdfArea").classList.toggle("hidden", !isScorer());
+  $("pdfHelp").classList.toggle("hidden", isScorer());
+
+  if (user) {
+    $("loggedInAs").textContent = "Logged in: " + user.email;
+  }
+}
+
+function displayMatch(row) {
+  if (!row) return;
+  match = row;
+
+  $("teamA").textContent = row.team_a || "Team A";
+  $("teamB").textContent = row.team_b || "Team B";
+  $("score").textContent =
+    `${Number(row.runs) || 0}/${Number(row.wicket) || 0}`;
+
+  const balls = Number(row.balls) || 0;
+  $("overs").textContent =
+    `${Math.floor(balls / 6)}.${balls % 6} overs`;
+
+  $("matchName").textContent = row.match_name || "Cricket Match";
+  $("liveStatus").textContent = "● LIVE SCORE";
+}
+
+async function loadMatch() {
+  const { data, error } = await db
+    .from("matches")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    say("Database connection error: " + error.message);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    match = null;
+    say("No match found. Add a match row in Supabase first.");
+    return;
+  }
+
+  displayMatch(data[0]);
+  say("Scoreboard connected.");
+}
+
+async function login() {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  if (email.toLowerCase() !== SCORER_EMAIL.toLowerCase()) {
+    say("This email is not authorised as the scorer.");
+    return;
+  }
+
+  $("loginBtn").disabled = true;
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  $("loginBtn").disabled = false;
+
+  if (error) {
+    say("Login failed: " + error.message);
+    return;
+  }
+
+  user = data.user;
+
+  if (!isScorer()) {
+    await db.auth.signOut();
+    user = null;
+    refreshPermissions();
+    say("This account is not authorised to score.");
+    return;
+  }
+
+  $("password").value = "";
+  refreshPermissions();
+  say("Scorer logged in.");
+  await loadMatch();
+}
+
+async function logout() {
+  await db.auth.signOut();
+  user = null;
+  refreshPermissions();
+  say("Logged out. Public score viewing is still available.");
+}
+
+async function saveScore(changes, description) {
+  if (!isScorer()) {
+    say("Please login with the authorised scorer account.");
+    return;
+  }
+
+  if (!match) {
+    say("No match is loaded.");
+    return;
+  }
+
+  if (busy) return;
+  busy = true;
+
+  const next = {
+    ...changes,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await db
+    .from("matches")
+    .update(next)
+    .eq("id", match.id)
+    .select()
+    .single();
+
+  busy = false;
+
+  if (error) {
+    say("Score update failed: " + error.message);
+    return;
+  }
+
+  displayMatch(data);
+  say(description + " — score saved.");
+}
+
+async function addRuns(runs) {
+  if (!isScorer() || !match) return;
+
+  const old = {
+    runs: Number(match.runs) || 0,
+    wicket: Number(match.wicket) || 0,
+    balls: Number(match.balls) || 0
+  };
+
+  undoStack.push(old);
+
+  await saveScore({
+    runs: old.runs + runs,
+    balls: old.balls + 1
+  }, `${runs} run(s) added`);
+}
+
+async function addWicket() {
+  if (!isScorer() || !match) return;
+
+  const old = {
+    runs: Number(match.runs) || 0,
+    wicket: Number(match.wicket) || 0,
+    balls: Number(match.balls) || 0
+  };
+
+  undoStack.push(old);
+
+  await saveScore({
+    wicket: old.wicket + 1,
+    balls: old.balls + 1
+  }, "Wicket recorded");
+}
+
+async function addWide() {
+  if (!isScorer() || !match) return;
+
+  const old = {
+    runs: Number(match.runs) || 0,
+    wicket: Number(match.wicket) || 0,
+    balls: Number(match.balls) || 0
+  };
+
+  undoStack.push(old);
+
+  await saveScore({
+    runs: old.runs + 1
+  }, "Wide recorded");
+}
+
+async function undo() {
+  if (!isScorer() || !match) return;
+
+  const old = undoStack.pop();
+
+  if (!old) {
+    say("No ball to undo in this session.");
+    return;
+  }
+
+  await saveScore(old, "Previous score restored");
+}
+
+async function shareMatch() {
+  const text = `${match?.team_a || "Team A"} ${
+    match?.runs || 0
+  }/${match?.wicket || 0} vs ${match?.team_b || "Team B"}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "Elandhai Premier League",
+        text,
+        url: location.href
+      });
+      return;
+    } catch (e) {}
+  }
+
+  try {
+    await navigator.clipboard.writeText(location.href);
+    say("Match link copied. Share it with viewers.");
+  } catch (e) {
+    say("Copy this page's address from your browser to share.");
+  }
+}
+
+function printScorecard() {
+  if (!match) {
+    say("No scorecard available yet.");
+    return;
+  }
+
+  const text = [
+    "ELANDHAI PREMIER LEAGUE",
+    match.match_name || "Cricket Match",
+    `${match.team_a} vs ${match.team_b}`,
+    `Score: ${match.runs}/${match.wicket}`,
+    `Overs: ${Math.floor((Number(match.balls)||0)/6)}.${(Number(match.balls)||0)%6}`,
+    "",
+    "Generated from Elandhai Premier League scoreboard"
+  ].join("\n");
+
+  const win = window.open("", "_blank");
+
+  if (!win) {
+    say("Allow pop-ups to print the scorecard.");
+    return;
+  }
+
+  win.document.write(
+    "<html><head><title>Scorecard</title></head>" +
+    "<body style='font:16px Arial;padding:25px'>" +
+    "<pre style='white-space:pre-wrap'>" +
+    text.replace(/[&<>]/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;"
+    }[c])) +
+    "</pre><button onclick='window.print()'>Print / Save PDF</button>" +
+    "</body></html>"
+  );
+
+  win.document.close();
+}
+
+async function extractPdf() {
+  if (!isScorer()) {
+    say("Scorer login required.");
+    return;
+  }
+
+  const file = $("pdfFile").files[0];
+
+  if (!file) {
+    say("Choose a PDF file first.");
+    return;
+  }
+
+  try {
+    $("extractBtn").disabled = true;
+    say("Reading PDF...");
+
+    const bytes = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    const lines = [];
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(item => item.str).join("\n");
+      lines.push(...pageText.split(/\r?\n/));
+    }
+
+    const cleaned = [...new Set(
+      lines.map(line => line.trim())
+        .filter(line => line.length > 1 && /[a-zA-Z]/.test(line))
+    )];
+
+    $("playerNames").value = cleaned.join("\n");
+    say("Text extracted. Review the names before using them.");
+  } catch (error) {
+    say("Could not read this PDF. It may be scanned or protected.");
+  } finally {
+    $("extractBtn").disabled = false;
+  }
+}
+
+function downloadNames() {
+  const blob = new Blob(
+    [$("playerNames").value],
+    { type: "text/plain;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "elandhai-squad.txt";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+$("loginBtn").addEventListener("click", login);
+$("logoutBtn").addEventListener("click", logout);
+$("shareBtn").addEventListener("click", shareMatch);
+$("printBtn").addEventListener("click", printScorecard);
+$("wicketBtn").addEventListener("click", addWicket);
+$("wideBtn").addEventListener("click", addWide);
+$("undoBtn").addEventListener("click", undo);
+$("extractBtn").addEventListener("click", extractPdf);
+$("downloadNamesBtn").addEventListener("click", downloadNames);
+
+document.querySelectorAll("[data-runs]").forEach(button => {
+  button.addEventListener("click", () => {
+    addRuns(Number(button.dataset.runs));
+  });
 });
-let b=$("bowler"),old=b.value;
-b.innerHTML="";
-bowlers.forEach(x=>b.add(new Option(x.name,x.name)));
-if(!bowlers.some(x=>x.name===old)){
-b.add(new Option("New Bowler","New Bowler"));b.value="New Bowler";
-}else b.value=old;
+
+async function start() {
+  const { data } = await db.auth.getSession();
+  user = data.session?.user || null;
+  refreshPermissions();
+
+  await loadMatch();
+
+  db.auth.onAuthStateChange((_event, session) => {
+    user = session?.user || null;
+    refreshPermissions();
+  });
+
+  db.channel("live-match-scores")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "matches"
+      },
+      payload => {
+        if (!match) {
+          loadMatch();
+          return;
+        }
+
+        const row = payload.new;
+
+        if (row && row.id === match.id) {
+          displayMatch(row);
+        }
+      }
+    )
+    .subscribe();
+
+  // Fallback refresh in case Realtime is not enabled.
+  setInterval(loadMatch, 5000);
 }
-function saveHistory(){
-history.push(JSON.stringify({runs,wickets,balls,extras,ended,batters,bowlers,recent}));
-if(history.length>50)history.shift();
-}
-function score(n){
-if(ended){$("notice").textContent="Innings ended. Start a new match.";return}
-if(balls>=limit*6){endInnings();return}
-let striker=$("striker").value,non=$("nonStriker").value,bn=$("bowler").value;
-let bat=batters.find(x=>x.name===striker&&!x.out);
-if(!bat){$("notice").textContent="Add another batter in Teams & Players.";return}
-saveHistory();
-let bowl=bowlers.find(x=>x.name===bn);
-if(!bowl){bowl={name:bn,balls:0,r:0,w:0};bowlers.push(bowl)}
-runs+=n;bat.r+=n;bat.b++;bowl.r+=n;bowl.balls++;
-if(n===4)bat.f++;
-if(n===6)bat.s++;
-balls++;
-if(n%2===1)swap();
-if(balls%6===0)swap();
-recent.push(String(n));recent=recent.slice(-12);
-if(wickets>=10||balls>=limit*6)ended=true;
-$("notice").textContent="Recorded "+n+" run(s).";
-render();
-}
-function swap(){
-let a=$("striker").value,b=$("nonStriker").value;
-if(a&&b){$("striker").value=b;$("nonStriker").value=a}
-}
-function wicket(){
-if(ended)return;
-if(wickets>=10)return;
-let bat=batters.find(x=>x.name===$("striker").value&&!x.out);
-if(!bat)return;
-saveHistory();
-let bowl=bowlers.find(x=>x.name===$("bowler").value);
-if(!bowl){bowl={name:$("bowler").value,balls:0,r:0,w:0};bowlers.push(bowl)}
-bat.b++;bat.out=true;wickets++;balls++;bowl.balls++;bowl.w++;
-recent.push("W");recent=recent.slice(-12);
-if(wickets>=10||balls>=limit*6)ended=true;
-render();
-$("notice").textContent="Wicket recorded!";
-}
-function extra(type){
-if(ended)return;
-saveHistory();
-runs++;extras++;
-let bowl=bowlers.find(x=>x.name===$("bowler").value);
-if(!bowl){bowl={name:$("bowler").value,balls:0,r:0,w:0};bowlers.push(bowl)}
-bowl.r++;
-recent.push(type==="Wide"?"Wd":"Nb");recent=recent.slice(-12);
-render();
-$("notice").textContent=type+" recorded. One extra run added.";
-}
-function undo(){
-if(!history.length){$("notice").textContent="Nothing to undo.";return}
-let s=JSON.parse(history.pop());
-runs=s.runs;wickets=s.wickets;balls=s.balls;extras=s.extras;ended=s.ended;
-batters=s.batters;bowlers=s.bowlers;recent=s.recent;
-render();$("notice").textContent="Last action undone.";
-}
-function endInnings(){ended=true;$("status").textContent="INNINGS ENDED";render()}
-function newMatch(){
-if(!confirm("Start a new match and reset the score?"))return;
-runs=0;wickets=0;balls=0;extras=0;recent=[];history=[];ended=false;
-batters.forEach(b=>{b.r=0;b.b=0;b.f=0;b.s=0;b.out=false});
-bowlers.forEach(b=>{b.balls=0;b.r=0;b.w=0});
-$("status").textContent="LIVE MATCH";render();
-}
-function render(){
-$("runs").textContent=runs;$("wickets").textContent=wickets;
-$("overs").textContent=overText(balls);
-$("status").textContent=ended?"INNINGS ENDED":"LIVE MATCH";
-$("summary").textContent=ended?"Innings complete: "+runs+"/"+wickets+" ("+overText(balls)+" overs)":teamA+" scored "+runs+"/"+wickets+" in "+overText(balls)+" overs.";
-$("extras").textContent="Extras: "+extras+" · Total: "+runs+"/"+wickets;
-$("battingRows").innerHTML=batters.map(b=>`<tr><td>${safe(b.name)}${b.out?" (out)":""}</td><td>${b.r}</td><td>${b.b}</td><td>${b.f}</td><td>${b.s}</td><td>${b.b?(100*b.r/b.b).toFixed(1):"0.0"}</td></tr>`).join("");
-$("bowlingRows").innerHTML= bowlers.map(b=>`<tr><td>${safe(b.name)}</td><td>${overText(b.balls)}</td><td>${b.r}</td><td>${b.w}</td><td>${b.balls?(b.r/(b.balls/6)).toFixed(1):"0.0"}</td></tr>`).join("");
-$("recent").innerHTML=recent.slice().reverse().map(x=>`<span class="ball">${safe(x)}</span>`).join("")||"No balls recorded yet.";
-fillSelects();renderSquad();renderPoints();
-}
-function addPlayer(){
-let name=$("playerName").value.trim();
-if(!name){alert("Enter a player name.");return}
-let k=$("teamChoice").value;
-squads[k].push({name,role:$("playerRole").value});
-if(k==="A"&&batters.length<11)batters.push({name,r:0,b:0,f:0,s:0,out:false});
-$("playerName").value="";
-renderSquad();render();
-}
-function renderSquad(){
-let k=$("teamChoice").value;
-$("squadTitle").textContent=(k==="A"?teamA:teamB)+" squad";
-$("squad").innerHTML=squads[k].map((p,i)=>`<div class="player"><span>${safe(p.name)} · ${safe(p.role)}</span><button onclick="removePlayer(${i})">Remove</button></div>`).join("")||"<p>No players added yet.</p>";
-}
-function removePlayer(i){
-squads[$("teamChoice").value].splice(i,1);renderSquad();
-}
-$("teamChoice").addEventListener("change",renderSquad);
-function renderPoints(){
-$("pointsRows").innerHTML=points.slice().sort((a,b)=>b.w-a.w).map((p,i)=>`<tr><td>${i+1}. ${safe(p.name)}</td><td>${p.p}</td><td>${p.w}</td><td>${p.l}</td><td>${p.w*2}</td></tr>`).join("");
-}
-function addTeam(){
-let name=prompt("Enter the new team name:");
-if(!name||!name.trim())return;
-if(points.some(p=>p.name.toLowerCase()===name.trim().toLowerCase())){alert("Team already exists.");return}
-points.push({name:name.trim(),p:0,w:0,l:0});renderPoints();
-}
-function downloadScore(){
-let text="BOUNDARY LIVE - SCORECARD\n"+matchName+"\n"+teamA+" vs "+teamB+"\nScore: "+runs+"/"+wickets+"\nOvers: "+overText(balls)+"\nExtras: "+extras+"\n\nBATTING\n";
-text+="Player | Runs | Balls | 4s | 6s\n";
-batters.forEach(b=>text+=b.name+" | "+b.r+" | "+b.b+" | "+b.f+" | "+b.s+"\n");
-text+="\nBOWLING\n";
-bowlers.forEach(b=>text+=b.name+" | "+overText(b.balls)+" overs | "+b.r+" runs | "+b.w+" wickets\n");
-let blob=new Blob([text],{type:"text/plain;charset=utf-8"});
-let url=URL.createObjectURL(blob),a=document.createElement("a");
-a.href=url;a.download="Boundary-Live-Scorecard.txt";a.click();
-URL.revokeObjectURL(url);
-}
-function shareScore(){
-let text=teamA+" "+runs+"/"+wickets+" ("+overText(balls)+" overs) vs "+teamB;
-if(navigator.share)navigator.share({title:"Boundary Live Score",text:text}).catch(()=>{});
-else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Score copied!")).catch(()=>prompt("Copy this score:",text));
-else prompt("Copy this score:",text);
-}
-render();
+
+start();
 </script>
 </body>
 </html>
-
